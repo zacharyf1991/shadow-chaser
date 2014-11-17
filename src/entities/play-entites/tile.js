@@ -9,7 +9,8 @@ var Tile = function (state, x, y){
 	//this.physics.acceleration.y = 15;
 	//this.physics.velocity.y = 15;
 
-	this.alpha = 1;
+	this.alpha = 0.5;
+	this.visible = false;
 
 
 

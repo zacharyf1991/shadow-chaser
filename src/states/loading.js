@@ -39,8 +39,16 @@ ShadowChaser.Loading.preload = function () {
 	this.menuAssets();
 	this.platformAssets();
 	this.runnerAssets();
+	this.animationIntro();
 
 };
+
+ShadowChaser.Loading.animationIntro = function(){
+	
+	this.addSpriteSheet('escape', 'assets/img/runner/viktor-escape.png', 299, 133);
+	this.addImage('escapeBackground', 'assets/img/runner/viktor-escape-tree.png')
+
+}
 
 
 ShadowChaser.Loading.backgroundCharactersAssets = function(){
@@ -50,6 +58,8 @@ ShadowChaser.Loading.backgroundCharactersAssets = function(){
 }
 
 ShadowChaser.Loading.environmentAssets = function(){
+
+	this.addImage('sunlight', 'assets/img/environment/sun-beams.png' );
 	
 	// this.addImage('background', 'assets/img/environment/background.jpg');
 
@@ -66,15 +76,15 @@ ShadowChaser.Loading.menuAssets = function(){
 }
 ShadowChaser.Loading.platformAssets = function(){
 	this.addJSON( 'platformJSON', 'assets/tilemaps/platform-tiles/platforms.json' );
-	this.addImage( 'platform01', 'assets/img/platforms/bg_01.jpg' );
-	this.addImage( 'platform02', 'assets/img/platforms/bg_02.jpg' );
-	this.addImage( 'platform03', 'assets/img/platforms/bg_03.jpg' );
-	this.addImage( 'platform04', 'assets/img/platforms/bg_04.jpg' );
-	this.addImage( 'platform05', 'assets/img/platforms/bg_05.jpg' );
-	this.addImage( 'platform06', 'assets/img/platforms/bg_06.jpg' );
-	this.addImage( 'platform07', 'assets/img/platforms/bg_07.jpg' );
-	this.addImage( 'platform08', 'assets/img/platforms/bg_08.jpg' );
-	// this.addSpriteSheet( 'platform', 'assets/img/platforms/bg-images.jpg', 1012, 320 );
+	// this.addImage( 'platform01', 'assets/img/platforms/bg_01.jpg' );
+	// this.addImage( 'platform02', 'assets/img/platforms/bg_02.jpg' );
+	// this.addImage( 'platform03', 'assets/img/platforms/bg_03.jpg' );
+	// this.addImage( 'platform04', 'assets/img/platforms/bg_04.jpg' );
+	// this.addImage( 'platform05', 'assets/img/platforms/bg_05.jpg' );
+	// this.addImage( 'platform06', 'assets/img/platforms/bg_06.jpg' );
+	// this.addImage( 'platform07', 'assets/img/platforms/bg_07.jpg' );
+	// this.addImage( 'platform08', 'assets/img/platforms/bg_08.jpg' );
+	this.addSpriteSheet( 'platform', 'assets/img/platforms/bg-images.jpg', 1012, 320 );
 
 	this.addImage( 'tile', 'assets/img/platforms/tile.png' );
 	

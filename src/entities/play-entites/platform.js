@@ -3,9 +3,9 @@ var Platform = function( state, num ){
 	this.state = state;
 
 
-	this.background = new Kiwi.GameObjects.StaticImage(this.state, this.state.textures[ 'platform0' + num ], 0, 0);
-	// this.background = new Kiwi.GameObjects.Sprite( this.state, this.state.textures[ 'platform' ], 0, 0 );
-	// this.background.cellIndex = num - 1;
+	//this.background = new Kiwi.GameObjects.StaticImage(this.state, this.state.textures[ 'platform0' + num ], 0, 0);
+	this.background = new Kiwi.GameObjects.Sprite( this.state, this.state.textures[ 'platform' ], 0, 0 );
+	this.background.cellIndex = num - 1;
 	// this.background.scaleX = this.background.scaleX / 0.65 * 1.3;
 	// this.background.scaleY = this.background.scaleY / 0.65 * 1.3;
 	// this.background.x += 400;
@@ -48,8 +48,8 @@ Platform.prototype.generateTiles = function () {
 	var height = 22,
 		i = 0,
 		tileLength = this.myTileArray.data.length,
-		tileWidth = 44,
-		tileHeight = 32, 
+		tileWidth = 22,
+		tileHeight = 16, 
 		width = 46;
 	for ( i; i < tileLength; i++ ) {
 		if( this.myTileArray.data[i] > 0 ) {

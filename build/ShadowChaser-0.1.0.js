@@ -25,19 +25,82 @@ MenuButton.prototype.left = function () {
 	this.animation.switchTo( 0 );
 	
 }
+BloodBar = function(state){
+	this.state = state;
+	this.textOffsetX = 50;
+	this.camera = this.state.game.cameras.defaultCamera;
+
+	this.bloodText = new Kiwi.GameObjects.Textfield ( this.state, 'Blood: 100 % ', this.state.runner.x, 20, '#FF0000', 32 );
+	this.state.addChild(this.bloodText);
+
+	this.blood = 100;
+	this.maxBlood = 100;
+	this.bloodRate = 0.05;
+
+
+}
+
+
+
+/**
+* This method checks to see if a player is on a leftSlope.
+*
+* Please note, "leftSlope" is refering to a slope that when the player is standing on the tile, facing away from the tile, the player is facing left.
+* Also note, this function checks for the outward edges of the sloping tile and calculates those points too for a more polished slope interaction
+*
+* @method checkLeftSlope
+* @public
+*/
+
+BloodBar.prototype.update = function(){
+	this.updateBlood();
+	this.updatePosition();
+	this.updateText();
+
+
+
+}
+
+BloodBar.prototype.updateBlood = function(){
+	var minBlood = 25;
+	if(this.blood > minBlood ){
+		this.blood -= this.bloodRate;
+		
+	} else {
+		
+		// Game Over Condition Here
+		this.blood = minBlood;
+
+	}
+}
+BloodBar.prototype.updateText = function(){
+	this.bloodText.text = "Blood: " + Math.round( this.blood ) + "%";
+}
+
+
+BloodBar.prototype.updatePosition = function(){
+
+	this.bloodText.x = -( this.camera.transform.x ) + this.textOffsetX;
+	// this.bloodText.x = this.state.runner.x + this.textOffsetX;
+}
+
+
 //PlayerManager / Player
 var Runner = function (state, x, y){
     Kiwi.GameObjects.Sprite.call(this, state, state.textures.runner, x, y, false);
     this.state = state;
     
+    this.animationSpeed = 0.05;
 
     this.animation.add('idle', [0], 0.1, true);
     // this.animation.add('run', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13], 0.025, true);
-    this.animation.add('run', [ 22, 23, 24, 25, 26, 27, 28, 29, 30 ], 0.05, true);
-    this.animation.add('jumpStart', [ 09, 10 ], 0.05, false);
-    this.animation.add('jump', [ 11 ], 0.05, false);
-    this.animation.add('fallStart', [ 12, 13 ], 0.05, false);
-    this.animation.add('fall', [ 14 ], 0.05, false);
+    this.animation.add('run', [ 22, 23, 24, 25, 26, 27, 28, 29, 30 ], this.animationSpeed, true);
+    this.animation.add('jumpStart', [ 09, 10 ], this.animationSpeed, false);
+    this.animation.add('jump', [ 11 ], this.animationSpeed, false);
+    this.animation.add('fallStart', [ 12, 13 ], this.animationSpeed, false);
+    this.animation.add('fall', [ 14 ], this.animationSpeed, false);
+
+    this.animation.add('run', [ 22, 23, 24, 25, 26, 27, 28, 29, 30 ], this.animationSpeed, true);
 
     this.animation.play('run');   
 
@@ -45,17 +108,20 @@ var Runner = function (state, x, y){
     this.animation.getAnimation('fallStart').onStop.add(this.startFall, this);
 
 
-    this.scaleX = 0.75;
-    this.scaleY = 0.75; 
+
+    // this.scaleX = 0.75;
+    // this.scaleY = 0.75; 
 
     this.box.hitbox = new Kiwi.Geom.Rectangle( 41, 63, 66, 110 ); 
     this.physics = this.components.add(new Kiwi.Components.ArcadePhysics(this, this.box));
 
     this.physics.allowCollisions = Kiwi.Components.ArcadePhysics.FLOOR;
+    // this.physics.allowCollisions = Kiwi.Components.ArcadePhysics.FLOOR;
     
 
     this.force = 3;
     this.maxRunVelo = 200;
+    this.runVelo = 120;
     this.jumpHeight = 40;
 
     // Raw physics data
@@ -110,6 +176,11 @@ Kiwi.extend(Runner, Kiwi.GameObjects.Sprite);
 
 
 Runner.prototype.update = function(){
+    Kiwi.GameObjects.Sprite.prototype.update.call(this);
+
+    if( this.state.bloodBar.blood < 40 ) {
+        this.die();
+    }
 
   
     if( this.canJump && !this.jumpAnimationPlaying) {
@@ -127,14 +198,10 @@ Runner.prototype.update = function(){
      }
 
     this.updateYAcceleration();
+    this.updateXVelocity();
+    this.updateAnimationSpeed();
 
-    this.playersVelocity = 1 - (1 / (this.accellerationTime + 1));
-
-    this.accellerationTime += this.accellSpeed; //0.001;
-    Kiwi.GameObjects.Sprite.prototype.update.call(this);
-
-    this.playersVelocityAfter = this.playersVelocity * this.maxRunVelo;;
-    this.physics.velocity.x = (this.playersVelocityAfter * game.time.rate);
+    
 
     if(this.y > 700){
         this.y = -50;
@@ -196,6 +263,13 @@ Runner.prototype.slowPlayer = function() {
 
 };
 
+Runner.prototype.die = function() {
+    if(this.animation.currentAnimation.name != 'die' ){
+        this.animation.play('die');
+    }
+
+};
+
 Runner.prototype.jump = function () {
     if(this.canJump){
             this.upKeyDown = true;
@@ -248,7 +322,17 @@ Runner.prototype.updateYAcceleration = function(){
     this.physics.acceleration.y = this.yAccel  * this.state.game.time.rate;
 }
 
+Runner.prototype.updateXVelocity = function(){
+    var blood = this.state.bloodBar.blood;
+    var veloMod =  blood / this.state.bloodBar.maxBlood;
+    this.physics.velocity.x = this.runVelo * veloMod;
+}
 
+Runner.prototype.updateAnimationSpeed = function(){
+    var blood = this.state.bloodBar.blood;
+    var rateMod =  blood / this.state.bloodBar.maxBlood;
+    this.animation.currentAnimation.speed = this.animationSpeed / rateMod;
+}
 
 
 
@@ -327,9 +411,9 @@ var Platform = function( state, num ){
 	this.state = state;
 
 
-	this.background = new Kiwi.GameObjects.StaticImage(this.state, this.state.textures[ 'platform0' + num ], 0, 0);
-	// this.background = new Kiwi.GameObjects.Sprite( this.state, this.state.textures[ 'platform' ], 0, 0 );
-	// this.background.cellIndex = num - 1;
+	//this.background = new Kiwi.GameObjects.StaticImage(this.state, this.state.textures[ 'platform0' + num ], 0, 0);
+	this.background = new Kiwi.GameObjects.Sprite( this.state, this.state.textures[ 'platform' ], 0, 0 );
+	this.background.cellIndex = num - 1;
 	// this.background.scaleX = this.background.scaleX / 0.65 * 1.3;
 	// this.background.scaleY = this.background.scaleY / 0.65 * 1.3;
 	// this.background.x += 400;
@@ -372,8 +456,8 @@ Platform.prototype.generateTiles = function () {
 	var height = 22,
 		i = 0,
 		tileLength = this.myTileArray.data.length,
-		tileWidth = 44,
-		tileHeight = 32, 
+		tileWidth = 22,
+		tileHeight = 16, 
 		width = 46;
 	for ( i; i < tileLength; i++ ) {
 		if( this.myTileArray.data[i] > 0 ) {
@@ -402,7 +486,8 @@ var Tile = function (state, x, y){
 	//this.physics.acceleration.y = 15;
 	//this.physics.velocity.y = 15;
 
-	this.alpha = 1;
+	this.alpha = 0.5;
+	this.visible = false;
 
 
 
@@ -431,6 +516,15 @@ CameraManager = function(state){
 
     this.camera = game.cameras.defaultCamera;
 
+    this.cameraPos = 200;
+
+    this.bloodOffset = 500;
+
+    this.sunOffset = 50;
+
+    this.sunlight = new Kiwi.GameObjects.Sprite( this.state, this.state.textures.sunlight, -200, 0);
+    this.state.addChild(this.sunlight);
+
 
 }
 
@@ -441,6 +535,7 @@ CameraManager = function(state){
 */
 CameraManager.prototype.update = function () {
     this.updatePosition(); 
+    this.updateSunlight();
 }
 
 
@@ -448,7 +543,22 @@ CameraManager.prototype.update = function () {
 
 
 CameraManager.prototype.updatePosition = function() {
-    this.camera.transform.x = -( this.state.runner.x - 100 );
+
+	var offset = this.state.bloodBar.blood / this.state.bloodBar.maxBlood;
+
+    this.camera.transform.x = -( this.state.runner.x + this.cameraPos - (offset * this.bloodOffset ));
+    //this.camera.transform.y = -(this.state.player.y + this.state.playerInitialY);
+};
+
+CameraManager.prototype.updateSunlight = function() {
+
+	var offset = this.state.bloodBar.blood / this.state.bloodBar.maxBlood;
+
+	this.sunlight.alpha = 1 - offset;
+
+    this.camera.transform.x = -( this.state.runner.x + this.cameraPos - (offset * this.bloodOffset ));
+
+    this.sunlight.x = -( this.camera.transform.x ) - this.sunOffset * offset;
     //this.camera.transform.y = -(this.state.player.y + this.state.playerInitialY);
 };
 var InputManager = function (state, x, y){
@@ -615,9 +725,9 @@ InputManager.prototype.getKeysDown = function(){
 }
 PlatformManager = function(state){
 	this.state = state;
-	this.scale = 0.65;
+	this.scale = 1.3;
 
-	this.platformWidth = 2024; //2024;// * this.scale;
+	this.platformWidth = 1012;//2048; // 2024; //2024;// * this.scale;
 
 	// This number does not include 0, therefore the platform.length == this number
 	this.platformsAmount = 3;
@@ -654,7 +764,7 @@ PlatformManager.prototype.createPlatforms = function(){
 	var i = 0;
 	for ( i; i < this.platformsAmount; i++ ) {
 		var tempPlat = new Platform ( this.state, i + 1 );
-		tempPlat.x = i * 2024;
+		tempPlat.x = i * this.platformWidth;
 		//this.state.addChild( tempPlat );
 		this.platforms.addChild( tempPlat );
 	}
@@ -667,7 +777,7 @@ PlatformManager.prototype.checkPosition = function(){
 	for (var i = this.platforms.members.length - 1; i >= 0; i--) {
 
 		//console.log ( "Camera Calc:", (this.camera.transform.x * -1))
-		if( this.platforms.members[i].worldX < (this.camera.transform.x * -1) - this.platformWidth ) {
+		if( this.platforms.members[i].worldX < (this.camera.transform.x * -1) - this.platformWidth * this.scale) {
 			this.resetPlatformPosition( this.platforms.members[i] );
 		}
 	};	
@@ -948,6 +1058,43 @@ PlayerManager.prototype.stopJumpUp = function(){
 
 var ShadowChaser = ShadowChaser || {};
 
+ShadowChaser.Escape = new Kiwi.State('Escape');
+
+/**
+* The IntroState is the state which would manage any main-menu functionality for your game.
+* Generally this State would switch to other sub 'states' which would handle the individual features. 
+*  
+* Right now we are just switching straight to the PlayState.
+*
+*/
+
+
+ShadowChaser.Escape.create = function () {
+
+	this.background = new Kiwi.GameObjects.StaticImage( this, this.textures.escapeBackground, 200 , 50 );
+	this.addChild( this.background );
+
+	// this.playButton = new MenuButton( this, this.textures.breakFree, 620, 240 );
+	// this.addChild( this.playButton );
+	this.escape = new Kiwi.GameObjects.Sprite( this, this.textures.escape, 371 + 200, 111 + 50 );
+	this.escape.animation.add('idle', [0, 1, 2,3 ,4, 5, 6,7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 16, 17, 18], 0.05, false )
+	this.escape.animation.play('idle');
+	this.addChild( this.escape );
+
+	this.escape.animation.getAnimation('idle').onStop.add(this.startGame, this);
+}
+
+ShadowChaser.Escape.update = function() {
+	Kiwi.State.prototype.update.call(this);
+
+}
+
+ShadowChaser.Escape.startGame = function () {
+	game.states.switchState("Play");
+
+}
+var ShadowChaser = ShadowChaser || {};
+
 ShadowChaser.GameOver = new Kiwi.State('GameOver');
 
 
@@ -1009,7 +1156,7 @@ ShadowChaser.Intro.update = function() {
 
 ShadowChaser.Intro.playButtonHit = function () {
 	// console.log( "Hit Play Button" );
-	game.states.switchState("Play");
+	game.states.switchState("Escape");
 
 }
 /**
@@ -1053,8 +1200,16 @@ ShadowChaser.Loading.preload = function () {
 	this.menuAssets();
 	this.platformAssets();
 	this.runnerAssets();
+	this.animationIntro();
 
 };
+
+ShadowChaser.Loading.animationIntro = function(){
+	
+	this.addSpriteSheet('escape', 'assets/img/runner/viktor-escape.png', 299, 133);
+	this.addImage('escapeBackground', 'assets/img/runner/viktor-escape-tree.png')
+
+}
 
 
 ShadowChaser.Loading.backgroundCharactersAssets = function(){
@@ -1064,6 +1219,8 @@ ShadowChaser.Loading.backgroundCharactersAssets = function(){
 }
 
 ShadowChaser.Loading.environmentAssets = function(){
+
+	this.addImage('sunlight', 'assets/img/environment/sun-beams.png' );
 	
 	// this.addImage('background', 'assets/img/environment/background.jpg');
 
@@ -1080,15 +1237,15 @@ ShadowChaser.Loading.menuAssets = function(){
 }
 ShadowChaser.Loading.platformAssets = function(){
 	this.addJSON( 'platformJSON', 'assets/tilemaps/platform-tiles/platforms.json' );
-	this.addImage( 'platform01', 'assets/img/platforms/bg_01.jpg' );
-	this.addImage( 'platform02', 'assets/img/platforms/bg_02.jpg' );
-	this.addImage( 'platform03', 'assets/img/platforms/bg_03.jpg' );
-	this.addImage( 'platform04', 'assets/img/platforms/bg_04.jpg' );
-	this.addImage( 'platform05', 'assets/img/platforms/bg_05.jpg' );
-	this.addImage( 'platform06', 'assets/img/platforms/bg_06.jpg' );
-	this.addImage( 'platform07', 'assets/img/platforms/bg_07.jpg' );
-	this.addImage( 'platform08', 'assets/img/platforms/bg_08.jpg' );
-	// this.addSpriteSheet( 'platform', 'assets/img/platforms/bg-images.jpg', 1012, 320 );
+	// this.addImage( 'platform01', 'assets/img/platforms/bg_01.jpg' );
+	// this.addImage( 'platform02', 'assets/img/platforms/bg_02.jpg' );
+	// this.addImage( 'platform03', 'assets/img/platforms/bg_03.jpg' );
+	// this.addImage( 'platform04', 'assets/img/platforms/bg_04.jpg' );
+	// this.addImage( 'platform05', 'assets/img/platforms/bg_05.jpg' );
+	// this.addImage( 'platform06', 'assets/img/platforms/bg_06.jpg' );
+	// this.addImage( 'platform07', 'assets/img/platforms/bg_07.jpg' );
+	// this.addImage( 'platform08', 'assets/img/platforms/bg_08.jpg' );
+	this.addSpriteSheet( 'platform', 'assets/img/platforms/bg-images.jpg', 1012, 320 );
 
 	this.addImage( 'tile', 'assets/img/platforms/tile.png' );
 	
@@ -1114,12 +1271,14 @@ ShadowChaser.Play.create = function () {
 
 	this.camera = this.game.cameras.defaultCamera;
 
-	this.runner = new Runner(this, 200, 150);
+	this.runner = new Runner(this, 400, 150);
 	this.addChild( this.runner );
 
 	
 	this.inputManager = new InputManager( this, 0, 0 );
 	this.cameraManager = new CameraManager( this );
+
+	this.bloodBar = new BloodBar( this );
 
 
 
@@ -1131,6 +1290,7 @@ ShadowChaser.Play.update = function() {
 	Kiwi.State.prototype.update.call(this);
 	this.camera.transform.x -= 10 /** this.game.time.rate */;
 	this.cameraManager.update();
+	this.bloodBar.update();
 
 
 	this.platformManager.update();
@@ -1157,8 +1317,8 @@ var gameOptions = {
 	width: 1136,
 	height: 416,
 	deviceTarget: Kiwi.TARGET_COCOON,
-	plugins: [], //,
-	scaleType: Kiwi.Stage.SCALE_FIT
+	scaleType: Kiwi.Stage.SCALE_FIT,
+	plugins: []
 }
 
 var game = new Kiwi.Game('content', 'ShadowChaser', null, gameOptions);
@@ -1169,6 +1329,7 @@ this.game.stage.color = "332f3d";
 game.states.addState(ShadowChaser.Loading);
 game.states.addState(ShadowChaser.Intro);
 game.states.addState(ShadowChaser.Play);
+game.states.addState(ShadowChaser.Escape);
 game.states.addState(ShadowChaser.GameOver);
 
 game.states.switchState("Loading");

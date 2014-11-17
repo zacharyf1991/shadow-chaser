@@ -3,14 +3,17 @@ var Runner = function (state, x, y){
     Kiwi.GameObjects.Sprite.call(this, state, state.textures.runner, x, y, false);
     this.state = state;
     
+    this.animationSpeed = 0.05;
 
     this.animation.add('idle', [0], 0.1, true);
     // this.animation.add('run', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13], 0.025, true);
-    this.animation.add('run', [ 22, 23, 24, 25, 26, 27, 28, 29, 30 ], 0.05, true);
-    this.animation.add('jumpStart', [ 09, 10 ], 0.05, false);
-    this.animation.add('jump', [ 11 ], 0.05, false);
-    this.animation.add('fallStart', [ 12, 13 ], 0.05, false);
-    this.animation.add('fall', [ 14 ], 0.05, false);
+    this.animation.add('run', [ 22, 23, 24, 25, 26, 27, 28, 29, 30 ], this.animationSpeed, true);
+    this.animation.add('jumpStart', [ 09, 10 ], this.animationSpeed, false);
+    this.animation.add('jump', [ 11 ], this.animationSpeed, false);
+    this.animation.add('fallStart', [ 12, 13 ], this.animationSpeed, false);
+    this.animation.add('fall', [ 14 ], this.animationSpeed, false);
+
+    this.animation.add('run', [ 22, 23, 24, 25, 26, 27, 28, 29, 30 ], this.animationSpeed, true);
 
     this.animation.play('run');   
 
@@ -18,17 +21,20 @@ var Runner = function (state, x, y){
     this.animation.getAnimation('fallStart').onStop.add(this.startFall, this);
 
 
-    this.scaleX = 0.75;
-    this.scaleY = 0.75; 
+
+    // this.scaleX = 0.75;
+    // this.scaleY = 0.75; 
 
     this.box.hitbox = new Kiwi.Geom.Rectangle( 41, 63, 66, 110 ); 
     this.physics = this.components.add(new Kiwi.Components.ArcadePhysics(this, this.box));
 
     this.physics.allowCollisions = Kiwi.Components.ArcadePhysics.FLOOR;
+    // this.physics.allowCollisions = Kiwi.Components.ArcadePhysics.FLOOR;
     
 
     this.force = 3;
     this.maxRunVelo = 200;
+    this.runVelo = 120;
     this.jumpHeight = 40;
 
     // Raw physics data
@@ -83,6 +89,11 @@ Kiwi.extend(Runner, Kiwi.GameObjects.Sprite);
 
 
 Runner.prototype.update = function(){
+    Kiwi.GameObjects.Sprite.prototype.update.call(this);
+
+    if( this.state.bloodBar.blood < 40 ) {
+        this.die();
+    }
 
   
     if( this.canJump && !this.jumpAnimationPlaying) {
@@ -100,14 +111,10 @@ Runner.prototype.update = function(){
      }
 
     this.updateYAcceleration();
+    this.updateXVelocity();
+    this.updateAnimationSpeed();
 
-    this.playersVelocity = 1 - (1 / (this.accellerationTime + 1));
-
-    this.accellerationTime += this.accellSpeed; //0.001;
-    Kiwi.GameObjects.Sprite.prototype.update.call(this);
-
-    this.playersVelocityAfter = this.playersVelocity * this.maxRunVelo;;
-    this.physics.velocity.x = (this.playersVelocityAfter * game.time.rate);
+    
 
     if(this.y > 700){
         this.y = -50;
@@ -169,6 +176,13 @@ Runner.prototype.slowPlayer = function() {
 
 };
 
+Runner.prototype.die = function() {
+    if(this.animation.currentAnimation.name != 'die' ){
+        this.animation.play('die');
+    }
+
+};
+
 Runner.prototype.jump = function () {
     if(this.canJump){
             this.upKeyDown = true;
@@ -221,7 +235,17 @@ Runner.prototype.updateYAcceleration = function(){
     this.physics.acceleration.y = this.yAccel  * this.state.game.time.rate;
 }
 
+Runner.prototype.updateXVelocity = function(){
+    var blood = this.state.bloodBar.blood;
+    var veloMod =  blood / this.state.bloodBar.maxBlood;
+    this.physics.velocity.x = this.runVelo * veloMod;
+}
 
+Runner.prototype.updateAnimationSpeed = function(){
+    var blood = this.state.bloodBar.blood;
+    var rateMod =  blood / this.state.bloodBar.maxBlood;
+    this.animation.currentAnimation.speed = this.animationSpeed / rateMod;
+}
 
 
 

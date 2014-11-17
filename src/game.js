@@ -16,8 +16,8 @@ var gameOptions = {
 	width: 1136,
 	height: 416,
 	deviceTarget: Kiwi.TARGET_COCOON,
-	plugins: [], //,
-	scaleType: Kiwi.Stage.SCALE_FIT
+	scaleType: Kiwi.Stage.SCALE_FIT,
+	plugins: []
 }
 
 var game = new Kiwi.Game('content', 'ShadowChaser', null, gameOptions);
@@ -28,6 +28,7 @@ this.game.stage.color = "332f3d";
 game.states.addState(ShadowChaser.Loading);
 game.states.addState(ShadowChaser.Intro);
 game.states.addState(ShadowChaser.Play);
+game.states.addState(ShadowChaser.Escape);
 game.states.addState(ShadowChaser.GameOver);
 
 game.states.switchState("Loading");

@@ -42,6 +42,6 @@ ShadowChaser.Intro.update = function() {
 
 ShadowChaser.Intro.playButtonHit = function () {
 	// console.log( "Hit Play Button" );
-	game.states.switchState("Play");
+	game.states.switchState("Escape");
 
 }
