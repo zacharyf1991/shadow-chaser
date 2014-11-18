@@ -3,12 +3,13 @@ BloodBar = function(state){
 	this.textOffsetX = 50;
 	this.camera = this.state.game.cameras.defaultCamera;
 
-	this.bloodText = new Kiwi.GameObjects.Textfield ( this.state, 'Blood: 100 % ', this.state.runner.x, 20, '#FF0000', 32 );
+	this.bloodText = new Kiwi.GameObjects.Textfield ( this.state, 'Blood: 100 % ', -100, 20, '#FF0000', 32 );
 	this.state.addChild(this.bloodText);
 
 	this.blood = 100;
 	this.maxBlood = 100;
-	this.bloodRate = 0.05;
+	this.bloodRate =  0.0;
+	this.initRate = 0.017;
 
 
 }
@@ -33,9 +34,14 @@ BloodBar.prototype.update = function(){
 
 
 }
+BloodBar.prototype.start = function(){
+	this.bloodRate = this.initRate;
+
+
+}
 
 BloodBar.prototype.updateBlood = function(){
-	var minBlood = 25;
+	var minBlood = 35;
 	if(this.blood > minBlood ){
 		this.blood -= this.bloodRate;
 		

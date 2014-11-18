@@ -33,7 +33,7 @@ CameraManager.prototype.updatePosition = function() {
 
 	var offset = this.state.bloodBar.blood / this.state.bloodBar.maxBlood;
 
-    this.camera.transform.x = -( this.state.runner.x + this.cameraPos - (offset * this.bloodOffset ));
+    this.camera.transform.x =Math.round( -( this.state.runner.x + this.cameraPos - (offset * this.bloodOffset )) );
     //this.camera.transform.y = -(this.state.player.y + this.state.playerInitialY);
 };
 

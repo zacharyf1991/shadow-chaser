@@ -24,7 +24,8 @@ var Platform = function( state, num ){
 	this.myTileArray = this.getTiles( num );
 	
 
-	this.generateTiles();
+	// this.generateTiles();
+	this.tilesGenerated = false;
 
 };
 Kiwi.extend(Platform, Kiwi.Group);
@@ -42,6 +43,9 @@ Platform.prototype.getTiles = function( num ) {
 
 
 Platform.prototype.generateTiles = function () {
+	if(this.tilesGenerated){
+		return;
+	}
 
 	// height and width are the h and w of the tilemap
 	// tileHeight and tileWidth are == to the size of tiles 
@@ -63,6 +67,19 @@ Platform.prototype.generateTiles = function () {
 
 		}
 	}
+
+	this.tilesGenerated = true;
 		
 
+};
+
+Platform.prototype.removeTiles = function () {
+	if(!this.tilesGenerated){
+		return;
+	}
+		
+	for (var i = this.members[1].members.length - 1; i >= 0; i--) {
+		this.members[1].members[i].exists = false;
+	};
+	this.tilesGenerated = false;
 };

@@ -5,7 +5,7 @@ PlatformManager = function(state){
 	this.platformWidth = 1012;//2048; // 2024; //2024;// * this.scale;
 
 	// This number does not include 0, therefore the platform.length == this number
-	this.platformsAmount = 3;
+	this.platformsAmount = 8;
 	this.platforms = new Kiwi.Group( this.state );
 	this.state.addChild( this.platforms );
 	this.platforms.scaleX = this.scale;
@@ -52,10 +52,24 @@ PlatformManager.prototype.checkPosition = function(){
 	for (var i = this.platforms.members.length - 1; i >= 0; i--) {
 
 		//console.log ( "Camera Calc:", (this.camera.transform.x * -1))
-		if( this.platforms.members[i].worldX < (this.camera.transform.x * -1) - this.platformWidth * this.scale) {
+		if( this.platforms.members[i].worldX < (this.camera.transform.x * -1) - this.platformWidth * this.scale ) {
 			this.resetPlatformPosition( this.platforms.members[i] );
 		}
+		if( this.platforms.members[i].worldX > (this.camera.transform.x * -1) + this.platformWidth * this.scale ) {
+			// this.platforms.members[i].visible = false;
+		} else {
+			// this.visible = true;
+		}
+
+		if( this.platforms.members[i].worldX < (this.camera.transform.x * -1) + this.platformWidth * 1 * this.scale ) {
+			this.platforms.members[i].generateTiles();
+			// this.platforms.members[i].visible = false;
+		} else {
+			this.platforms.members[i].removeTiles();
+		}
 	};	
+
+
 
 }
 

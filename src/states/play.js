@@ -10,14 +10,19 @@ ShadowChaser.Play.create = function () {
 
 	this.camera = this.game.cameras.defaultCamera;
 
-	this.runner = new Runner(this, 400, 150);
-	this.addChild( this.runner );
+
+	this.createEscape();
+
+	this.runner = new Runner(this, 530, 150);
+	// this.addChild( this.runner );
 
 	
 	this.inputManager = new InputManager( this, 0, 0 );
 	this.cameraManager = new CameraManager( this );
 
 	this.bloodBar = new BloodBar( this );
+
+	
 
 
 
@@ -36,4 +41,22 @@ ShadowChaser.Play.update = function() {
 }
 
 
+ShadowChaser.Play.startGame = function() {
 
+	this.addChild( this.runner );
+	this.escape.alpha = 0;
+	this.bloodBar.start();
+}
+
+
+ShadowChaser.Play.createEscape = function() {
+	this.tree = new Kiwi.GameObjects.StaticImage( this, this.textures.escapeBackground, 0 , 84 );
+	this.addChild( this.tree );
+
+	this.escape = new Kiwi.GameObjects.Sprite( this, this.textures.escape, 371 , 111 + 80 );
+	this.escape.animation.add('idle', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 16, 17, 18], 0.05, false )
+	this.escape.animation.play('idle');
+	this.addChild( this.escape );
+
+	this.escape.animation.getAnimation('idle').onStop.add(this.startGame, this);
+}
